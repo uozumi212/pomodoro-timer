@@ -11,18 +11,58 @@ import {
   Circle,
   Box,
   Input,
+  Select,
+  Center,
+  useTheme,
+  NumberInput,
+  NumberInputField,
+  Slider,
+  SliderTrack,
+  SliderThumb,
+  SliderFilledTrack,
+  Flex,
+  Modal,
+  ModalOverlay,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
 } from '@chakra-ui/react';
-import { FaPlay, FaPause, FaSquare, FaUpload } from 'react-icons/fa';
-import { lightTheme, darkTheme, retroTheme } from './theme/theme';
-
-// type TimeProps = {
-//   time: Date;
-// };
+import { FaPlay, FaPause, FaSquare, FaUpload,FaPlus,FaMinus } from 'react-icons/fa';
+import { MdFreeBreakfast } from "react-icons/md";
+import { lightTheme, darkTheme, retroTheme, sunsetOradientTheme, oceanGradientTheme, yellowGradientTheme, greenGradientTheme, purpleGradientTheme, skyBlueGradientTheme } from './theme/theme';
+import { SiEnterprisedb } from 'react-icons/si';
 
 interface PomodoroTimerProps {
   setTheme: (theme: any) => void;
 }
 
+const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTheme }) => {
+  const [time, setTime] = useState(1500);
+  const [maxTime, setMaxTime] = useState(1500);
+  const [isActive, setIsActive] = useState(false);
+  const [customSound, setCustomSound] = useState<string | null>(null);
+  const [customSoundName, setCustomSoundName] = useState<string | null>('決定ボタンを押す22.mp3');
+  const [currentTheme, setCurrentTheme] = useState('light');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [notificationShown, setNotificationShown] = useState(false);
+
+  const [volume, setVolume] = useState(30);
+  // const [workTime, setWorkTime] = useState(25 * 60);
+  const [breakTime, setBreakTime] = useState(300);
+  const [isBreak, setIsBreak] = useState(false);
+  const [defaultAudio, setDefaultAudio] = useState<HTMLAudioElement | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // const theme = useTheme();
+  // Chakra UIのテーマ設定
+  const bgColor = useColorModeValue('gray.100', 'gray.700');
+  const textColor = useColorModeValue('gray.700', 'white');
+  const progressColor = useColorModeValue('red.300', 'red.300');
+
+  const requestRef = useRef<number>();
+  const previousTimeRef = useRef<number>();
+
+  // 時間フォーマット関数
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;
@@ -31,44 +71,97 @@ const formatTime = (time: number) => {
     .padStart(2, '0')}`;
 };
 
-const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTheme }) => {
-  const [time, setTime] = useState(10);
-  const [isActive, setIsActive] = useState(false);
-  const [customSound, setCustomSound] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+// お知らせの表示と音声の再生
+const showNotification = useCallback(() => {
+  toast.success(`${isBreak ? '休憩' : '作業' }時間が終了しました。`, {
+    position: 'top-right',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+  playSound();
+}, [isBreak]);
 
-  // const theme = useTheme();
-  const bgColor = useColorModeValue('gray.100', 'gray.700');
-  const textColor = useColorModeValue('gray.800', 'white');
-  const progressColor = useColorModeValue('red.400', 'red.300');
+  // タイマーリセット機能
+  const resetTimer = useCallback((minutes: number) => {
+    if (minutes > 0) {
+      const totalSeconds = minutes * 60;
+      setMaxTime(totalSeconds);
+      setTime(totalSeconds);
+      setIsActive(false);
+      setNotificationShown(false);
+    }
+  },[]);
 
-  const requestRef = useRef<number>();
-  const previousTimeRef = useRef<number>();
+useEffect(() => {
+  if (time <= 0 && !notificationShown) {
+    showNotification();
+    setNotificationShown(true);
+    setIsActive(false);
+    setIsBreak(!isBreak);
+    resetTimer(isBreak ? 25 : 5);
+  }
+}, [time, notificationShown, isBreak, showNotification, resetTimer]);
 
+  // タイマーのアニメーション設定
   const animate = useCallback(
     (time: number) => {
       if (previousTimeRef.current != undefined) {
         const deltaTime = time - previousTimeRef.current;
 
         if (isActive && deltaTime >= 1000) {
-          setTime((prevTime) => {
-            if (prevTime <= 1) {
-              showNotification();
-              setIsActive(false);
-              return 0;
-            }
-            return prevTime - 1;
-          });
+          setTime((prevTime) => Math.max(prevTime - 1, 0));
           previousTimeRef.current = time;
+          }
+        } else {
+            previousTimeRef.current = time;
         }
-      } else {
-        previousTimeRef.current = time;
-      }
       requestRef.current = requestAnimationFrame(animate);
     },
     [isActive]
   );
 
+  // テーマ変更のための useEffect
+  useEffect(() => {
+    switch (currentTheme) {
+      case 'light':
+        setTheme(lightTheme);
+        break;
+      case 'dark':
+        setTheme(darkTheme);
+        break;
+      case 'retro':
+        setTheme(retroTheme);
+        break;
+      case 'sunset':
+        setTheme(sunsetOradientTheme);
+        break;
+      case 'ocean':
+        setTheme(oceanGradientTheme);
+        break;
+      case 'yellow':
+        setTheme(yellowGradientTheme);
+        break;
+      case 'green':
+        setTheme(greenGradientTheme);
+        break;
+      case 'purple':
+        setTheme(purpleGradientTheme);
+        break;
+      case 'skyBlue':
+        setTheme(skyBlueGradientTheme);
+        break;
+    }
+  }, [currentTheme, setTheme]);
+
+  // テーマ変更のハンドラ
+  const handleThemaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentTheme(e.target.value);
+  };
+
+  // アニメーションフレーム設定
   useEffect(() => {
     requestRef.current = requestAnimationFrame(animate);
     return () => {
@@ -83,50 +176,59 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTheme }) => {
     if (file) {
       const soundUrl = URL.createObjectURL(file);
       setCustomSound(soundUrl);
+      setCustomSoundName(file.name);
     }
   };
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+    if (defaultAudio) {
+      defaultAudio.volume = volume / 100;
+    }
+  }, [volume, defaultAudio]);
+
+  useEffect(() => {
+    const audio = new Audio('../public/決定ボタンを押す22.mp3');
+    setDefaultAudio(audio);
+  }, []);
 
   const playSound = useCallback(() => {
-    if (customSound && audioRef.current) {
-      audioRef.current.play().catch((error) => console.error('音声再生エラー:', error));
+    const audioToPlay = customSound ? audioRef.current : defaultAudio;
+    if (audioToPlay instanceof HTMLAudioElement) {
+      audioToPlay.volume = volume / 100;
+      audioToPlay.currentTime = 0;
+      audioToPlay.play().catch((error) => console.error('音声再生エラー:', error));
     } else {
       const audio = new Audio('../public/決定ボタンを押す22.mp3');
+      audio.volume = volume / 100;
       audio.play().catch((error) => console.error('音声再生エラー:', error));
     }
-  }, [customSound]);
+  }, [customSound, volume, defaultAudio]);
 
-  const showNotification = useCallback(() => {
-    toast.success(`${time}分経ちました、休憩しましょう。`, {
-      position: 'top-right',
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
 
-    playSound();
-
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('ポモドーロタイマー', {
-        body: 'タイマーが終了しました！休憩しましょう。',
-      });
-    }
-    // notification.onclick = function () {
-    //   window.focus();
-    //   notification.close();
-    // };
-  }, [playSound]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
   };
 
-  const resetTimer = () => {
-    setTime(10);
-    setIsActive(false);
+
+
+  // 音量を小さくする
+  const handleMinus = () => {
+    setVolume((prev) => Math.max(prev - 10, 0));
   };
+
+  // 音量を大きくする
+  const handlePlus = () => {
+    setVolume((prev) => Math.min(prev + 10, 100));
+  };
+
+  const onClose = () => {
+    setIsModalOpen(false);
+  };
+
 
   return (
     <VStack spacing={6}>
@@ -135,11 +237,14 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTheme }) => {
           size="280px"
           bg={progressColor}
           position="absolute"
-          clipPath={`inset(${100 - (time / 1500) * 100}% 0 0 0)`}
+       clipPath={`inset(${100 - (time / maxTime) * 100}% 0 0 0)`}
         />
         <Box position="relative" zIndex={1}>
           <Text fontSize="6xl" fontWeight="bold" color={textColor}>
             {formatTime(time)}
+          </Text>
+          <Text fontSize="2xl" fontWeight="bold" color={textColor} textAlign="center">
+             {isBreak ? '休憩中' : '作業中'}
           </Text>
         </Box>
       </Circle>
@@ -155,15 +260,58 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTheme }) => {
         </Button>
         <Button
           colorScheme="blue"
-          onClick={resetTimer}
+          onClick={() =>  {
+            setIsBreak(false);
+            resetTimer(25)
+          }}
           aria-label="Reset"
           size="lg"
           borderRadius="full"
         >
           <Icon as={FaSquare} />
         </Button>
-        <Button as="label" htmlFor="sound-upload" cursor="pointer">
-          <Icon as={FaUpload} />
+        <Button h={12} onClick={() => {
+          setIsBreak(true);
+          resetTimer(5);
+          }}>
+          <Icon as={MdFreeBreakfast} boxSize={6}/>
+        </Button>
+        <Button onClick={() => setIsModalOpen(true)} h={50}>
+          <Text fontSize={18} fontWeight="bold">説明書</Text>
+        </Button>
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size='lg'>
+          <ModalOverlay />
+          <ModalContent maxWidth="40vw" maxHeight="80vh">
+          <ModalCloseButton fontSize={18}/>
+          <ModalBody width="100%" height="100%" display="flex" flexDirection="column">
+            <img src="../public/説明書.png"  alt="説明画像" width="100%" height="100%"/>
+            <Button colorScheme='blue' w="50%" mb={6} py={6} onClick={onClose} mx="auto">
+              <Text fontSize="22" fontWeight="bold">閉じる</Text>
+            </Button>
+          </ModalBody>
+          </ModalContent>
+        </Modal>
+      </HStack>
+
+      <Flex>
+        <NumberInput onChange={(valueString) => resetTimer(Number(valueString))} min={1} max={60} defaultValue={25}  bg={bgColor}  color='black'>
+          <NumberInputField placeholder="分単位で入力" sx={{ '::placeholder': {fontSize: '17px',} }} fontSize={22} fontWeight={600} w={150}/>
+        </NumberInput>
+        <Select value={currentTheme} onChange={handleThemaChange} bg={bgColor} ml={2} color={textColor} fontSize={20} fontWeight={600} w={150}  placeholder='外観テーマを選択' size="md">
+          <option value='light'>Light</option>
+          <option value='dark'>Dark</option>
+          <option value='retro'>Retro</option>
+          <option value="sunset">Red</option>
+          <option value="ocean">Blue</option>
+          <option value="yellow">Yellow</option>
+          <option value="green">Green</option>
+          <option value="purple">Purple</option>
+          <option value="skyBlue">SkyBlue</option>
+        </Select>
+      </Flex>
+      <Flex >
+      <Button as="label" htmlFor="sound-upload" cursor="pointer" h={12}>
+          <Icon as={FaUpload}  boxSize={6}/>
           <Input
             id="sound-upload"
             type="file"
@@ -172,13 +320,32 @@ const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ setTheme }) => {
             display="none"
             />
         </Button>
+        <Box
+          border="2px"
+          borderColor="gray.200"
+          borderRadius="md"
+          bg={bgColor}
+          p={2}
+          ml={2}
+          w="250px"
+          isTruncated
+        >
+          <Text textAlign="center" alignItems="center" mt={1} color="black"  fontWeight="bold" fontSize={17}>{customSoundName}</Text>
+        </Box>
         {customSound && <audio ref={audioRef} src={customSound} />}
-      </HStack>
-      <HStack>
-        <Button onClick={() => setTheme(lightTheme)}>Light</Button>
-        <Button onClick={() => setTheme(darkTheme)}>Dark</Button>
-        <Button onClick={() => setTheme(retroTheme)}>Retro</Button>
-      </HStack>
+      </Flex>
+      <Flex alignItems="center" width="100%">
+          <Icon  onClick={handleMinus} as={FaMinus} boxSize={8} mr={4} flexShrink={0} cursor='pointer' />
+
+        <Slider aria-label='volume-slider' value={volume} onChange={(val) => setVolume(val)} min={0} max={100} step={1} flex={1}>
+          <SliderTrack h={2}>
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb />
+        </Slider>
+        <Icon onClick={handlePlus} as={FaPlus} boxSize={8} ml={4} flexShrink={0} cursor='pointer' />
+      </Flex>
+
       <ToastContainer />
     </VStack>
   );
