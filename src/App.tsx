@@ -1,10 +1,9 @@
-// import { useState } from 'react';
-import React, { useEffect, useState } from 'react';
+import  { useState } from 'react';
 import './App.css';
 import PomodoroTimer from './PomodoroTimer';
 // import TodoList from './TodoList';
 import { ChakraProvider, Box, Heading, Center } from '@chakra-ui/react';
-import { lightTheme, darkTheme, retroTheme } from './theme/theme';
+import { lightTheme } from './theme/theme';
 
 function App() {
   // const [count, setCount] = useState(0);
