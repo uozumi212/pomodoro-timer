@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import defaultSound from '../assets/決定ボタンを押す22.mp3';
 
 const useTimerSound = () => {
   const [volume, setVolume] = useState(30);
@@ -11,7 +12,7 @@ const useTimerSound = () => {
   // 初期化時にデフォルト音声を設定
   useEffect(() => {
     if (!audioRef.current && !customSound) {
-      const defaultAudio = new Audio("../../public/決定ボタンを押す22.mp3");
+      const defaultAudio = new Audio(defaultSound);
       defaultAudio.volume = volume / 100;
       audioRef.current = defaultAudio;
       console.log("デフォルト音声を設定:", defaultAudio.src);

@@ -40,7 +40,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
             flexDirection="column"
           >
             <img
-              src="../public/説明書.png"
+              src="../assets/説明書.png"
               alt="説明画像"
               width="100%"
               height="100%"
