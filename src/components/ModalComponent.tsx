@@ -11,6 +11,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import React from "react";
+import manual from "../assets/説明書.png";
 
 interface ModalComponentProps {
   isModalOpen1: boolean;
@@ -40,7 +41,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
             flexDirection="column"
           >
             <img
-              src="../assets/説明書.png"
+              src={manual}
               alt="説明画像"
               width="100%"
               height="100%"

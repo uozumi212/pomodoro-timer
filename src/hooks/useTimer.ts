@@ -61,7 +61,7 @@ const useTimer = ({ playSound, audioRef}: UseTimerParams): TimerHookReturn => {
       pauseOnHover: true,
       draggable: true,
     });
-     console.log("Playing sound at notification:");
+      console.log("Playing sound at notification:");
       console.log("audioRef.current:", audioRef.current);
     playSound();
   }, [isBreak, playSound, audioRef]);
