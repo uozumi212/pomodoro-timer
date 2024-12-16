@@ -11,29 +11,36 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { FaMinus, FaPlus, FaUpload } from "react-icons/fa";
-import useTimerSound from "../hooks/useTimerSound";
 import { useEffect } from "react";
 
-const SoundComponent = () => {
-  const {
+interface SoundComponentProps {
+  volume: number;
+  setVolume: (volume: number) => void;
+  handleSoundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  customSoundName: string | null;
+  bgColor: string;
+  audioRef: React.RefObject<HTMLAudioElement>;
+  handleMinus: () => void;
+  handlePlus: () => void;
+  playSound: () => void;
+}
+
+const SoundComponent: React.FC<SoundComponentProps> = ({
     volume,
     setVolume,
     handleSoundUpload,
     customSoundName,
     bgColor,
-    customSound,
-    customAudio,
     audioRef,
     handleMinus,
     handlePlus,
     playSound,
-  } = useTimerSound();
-
+  }) => {
   useEffect(() => {
     if (audioRef.current) {
      audioRef.current.volume = volume / 100;
     }
-  }, [volume]);
+  }, [volume, audioRef]);
 
   return (
     <div>
@@ -72,7 +79,6 @@ const SoundComponent = () => {
             {customSoundName}
           </Text>
         </Box>
-        {customSound && <audio ref={audioRef} src={customSound} />}
       </Flex>
 
       <Flex alignItems="center" width="100%" mt={3}>

@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
-import useTimerSound from "./useTimerSound";
+
+interface UseTimerParams {
+  playSound: () => void;
+  audioRef: React.RefObject<HTMLAudioElement>;
+}
 
 interface TimerHookReturn {
   time: number;
@@ -19,7 +23,7 @@ interface TimerHookReturn {
   setNotificationShown: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const useTimer = (): TimerHookReturn => {
+const useTimer = ({ playSound, audioRef}: UseTimerParams): TimerHookReturn => {
   const [time, setTime] = useState(1500);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
@@ -27,8 +31,6 @@ const useTimer = (): TimerHookReturn => {
   const [notificationShown, setNotificationShown] = useState(false);
   const requestRef = useRef<number>();
   const previousTimeRef = useRef<number>();
-
-  const { playSound, audioRef } = useTimerSound();
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -90,13 +92,13 @@ const useTimer = (): TimerHookReturn => {
 
   // タイマーのアニメーション設定
   const animate = useCallback(
-    (time: number) => {
+    (currentTime: number) => {
       if (previousTimeRef.current != undefined) {
-        const deltaTime = time - previousTimeRef.current;
+        const deltaTime = currentTime - previousTimeRef.current;
 
         if (isActive && deltaTime >= 1000) {
           setTime((prevTime) => Math.max(prevTime - 1, 0));
-          previousTimeRef.current = time;
+          previousTimeRef.current = currentTime;
         }
       } else {
         previousTimeRef.current = time;

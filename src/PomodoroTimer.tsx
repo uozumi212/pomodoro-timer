@@ -24,8 +24,11 @@ import TimerDisplay from "./components/TimerDisplay";
 import PlayIconButton from "./components/PlayIconButton";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useTimerSound from "./hooks/useTimerSound";
 
 const PomodoroTimer: React.FC = () => {
+  const sound = useTimerSound();
+  const timer = useTimer({ playSound: sound.playSound, audioRef: sound.audioRef });
   const [currentTheme, setCurrentTheme] = useState("light");
   const [theme, setTheme] = useState(lightTheme);
   const [isModalOpen1, setIsModalOpen1] = useState(false);
@@ -42,17 +45,6 @@ const PomodoroTimer: React.FC = () => {
     setCurrentTheme(e.target.value);
   };
 
-  const {
-    time,
-    isActive,
-    isBreak,
-    maxTime,
-    formatTime,
-    resetTimer,
-    toggleTimer,
-    setIsBreak,
-  } = useTimer();
-
   return (
     <VStack spacing={6}>
       <ChakraProvider theme={theme}>
@@ -62,19 +54,19 @@ const PomodoroTimer: React.FC = () => {
               ポモドーロタイマー
             </Heading>
             <TimerDisplay
-              formatTime={formatTime}
-              time={time}
-              maxTime={maxTime}
-              isBreak={isBreak}
+              formatTime={timer.formatTime}
+              time={timer.time}
+              maxTime={timer.maxTime}
+              isBreak={timer.isBreak}
             />
           </Center>
 
           <Flex mt={4}>
             <PlayIconButton
-              isActive={isActive}
-              toggleTimer={toggleTimer}
-              setIsBreak={setIsBreak}
-              resetTimer={resetTimer}
+              isActive={timer.isActive}
+              toggleTimer={timer.toggleTimer}
+              setIsBreak={timer.setIsBreak}
+              resetTimer={timer.resetTimer}
             />
 
             <Button onClick={() => setIsModalOpen1(true)} h={50} ml={4}>
@@ -86,7 +78,7 @@ const PomodoroTimer: React.FC = () => {
 
           <Flex mt={3}>
             <NumberInput
-              onChange={(valueString) => resetTimer(Number(valueString))}
+              onChange={(valueString) => timer.resetTimer(Number(valueString))}
               min={1}
               max={60}
               defaultValue={25}
@@ -136,8 +128,17 @@ const PomodoroTimer: React.FC = () => {
               おすすめシーン別テーマ
             </Button>
           </Flex>
-
-          <SoundComponent />
+          <SoundComponent
+            volume={sound.volume}
+            setVolume={sound.setVolume}
+            handleSoundUpload={sound.handleSoundUpload}
+            customSoundName={sound.customSoundName}
+            bgColor={sound.bgColor}
+            audioRef={sound.audioRef}
+            handleMinus={sound.handleMinus}
+            handlePlus={sound.handlePlus}
+            playSound={sound.playSound}
+          />
         </Box>
 
         <ModalComponent

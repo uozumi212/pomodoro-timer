@@ -1,52 +1,25 @@
-# pomodoro-timer
+# Pomodoro Timer
 
-# React + TypeScript + Vite
+(public/タイマーアイコン.png)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+https://images.app.goo.gl/B6aQC8oDtHZg48tS6
 
-Currently, two official plugins are available:
+# 概要
+このツールはポモドーロテクニックを簡単に取り入れ、作業の効率化に役立てるためのツールです。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+ポモドーロテクニックとは下記URLを参照
+https://www.seraku.co.jp/tectec-note/recruit/recruit_pomodoro/
 
-## Expanding the ESLint configuration
+## インストール
+1.git clone <リポジトリURL>
+2.cd pomodoro-timer
+3.npm install
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## 使い方
+1.外観テーマとタイマー内の背景色を設定する
+2.アップロードボタンを押下して、タイマー通知の音声を設定する
+3.作業開始時に再生ボタンを押下。必要に応じて作業時間をフォーム内に入力して設定。
+4.タイマーが切れた後、再度再生ボタンを押下して休憩。
+5.3~4の手順の繰り返し
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+※各ボタンの機能などにつきましては、サイトの説明書ボタンを押下してください。
