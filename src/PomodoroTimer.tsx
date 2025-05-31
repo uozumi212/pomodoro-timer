@@ -215,7 +215,6 @@ const PomodoroTimer: React.FC = () => {
             top="20%"
             right="5%"
             onDragStart={(e) => {
-              e.preventDefault();
               const target = e.target as HTMLDivElement;
               const rect = target.getBoundingClientRect();
               const x = e.clientX - rect.left;
