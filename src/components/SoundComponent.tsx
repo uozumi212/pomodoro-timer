@@ -55,8 +55,8 @@ const SoundComponent: React.FC<SoundComponentProps> = ({
             display="none"
           />
         </Button>
-        <Button onClick={playSound} ml={2} h={50} fontSize={18}>
-          音声視聴
+        <Button onClick={playSound} ml={2} h={50} w={85} fontSize={18}>
+          音声
         </Button>
         <Box
           border="2px"
@@ -65,7 +65,7 @@ const SoundComponent: React.FC<SoundComponentProps> = ({
           bg={bgColor}
           p={2}
           ml={2}
-          w="140px"
+          w="160px"
           isTruncated
         >
           <Text
@@ -74,7 +74,7 @@ const SoundComponent: React.FC<SoundComponentProps> = ({
             mt={1}
             color="black"
             fontWeight="bold"
-            fontSize={17}
+            fontSize={16}
           >
             {customSoundName}
           </Text>
