@@ -182,6 +182,7 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
         maxHeight="80vh"
         top="20%"
         left="5%"
+        color="black"
         onDragStart={(e) => {
           const target = e.target as HTMLDivElement;
           const rect = target.getBoundingClientRect();
@@ -292,13 +293,13 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
                 }}
               />
 
-              <Flex justifyContent="space-between" alignItems="center">
+              <Flex mt={2} justifyContent="space-between" alignItems="center">
                 <Flex>
                   {CATEGORIES.map((category) => (
                     <Button
                       key={category.value}
                       size="sm"
-                      mr={1}
+                      ml={6}
                       colorScheme={category.value === currentCategory ? category.value.split('.')[0] : "gray"}
                       variant={category.value === currentCategory ? "solid" : "outline"}
                       onClick={() => setCurrentCategory(
@@ -337,23 +338,25 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 
           <Divider mb={4} />
 
-          <Flex mb={4} alignItems="center">
-            <InputGroup mr={2} justifyContent="space-between">
+          <Flex mt={4} mb={4} alignItems="center">
+            <InputGroup mr={2} justifyContent="space-between" width={200}>
               <InputLeftElement pointerEvents="none">
-                <SearchIcon color="gray.400" mt={4} fontSize={14} />
+                <SearchIcon color="gray.400" mt={5} ml={4} fontSize={14} />
               </InputLeftElement>
               <Input
                 placeholder="メモを検索..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 borderRadius="md"
+                pl={20}
+                size="md"
               />
             </InputGroup>
 
-            <Flex overflowX="auto" whiteSpace="nowrap" py={1}>
+            <Flex overflowX="auto" whiteSpace="nowrap" py={1} mr={20}>
               <Button 
                 size="sm" 
-                mr={1} 
+                ml={8}
                 colorScheme={filterCategory === "" ? "gray" : "gray"} 
                 variant={filterCategory === "" ? "solid" : "outline"}
                 onClick={() => setFilterCategory("")}
@@ -364,7 +367,7 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
                 <Button
                   key={category.value}
                   size="sm"
-                  mr={1}
+                  ml={4}
                   colorScheme={category.value.split('.')[0]}
                   variant={filterCategory === category.value ? "solid" : "outline"}
                   onClick={() => setFilterCategory(
@@ -377,7 +380,7 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
             </Flex>
           </Flex>
 
-          <VStack spacing={4} align="stretch" flex="1" overflowY="auto">
+          <VStack mt={8} spacing={4} align="stretch" flex="1" overflowY="auto">
             {notes.length === 0 ? (
               <Text color="gray.500" textAlign="center">メモはまだありません。新しいメモを追加してください。</Text>
             ) : searchQuery && !notes.some(note => 
@@ -413,8 +416,8 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
                   <Flex position="absolute" top={2} right={2}>
                     <IconButton
                       aria-label="Edit note"
-                      icon={<EditIcon />}
-                      size="sm"
+                      icon={<EditIcon boxSize={20} color="blue" />}
+                      size="md"
                       colorScheme="blue"
                       opacity={1}
                       className="action-btn"
@@ -424,8 +427,8 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
                     />
                     <IconButton
                       aria-label="Delete note"
-                      icon={<DeleteIcon />}
-                      size="sm"
+                      icon={<DeleteIcon boxSize={20} color="red" />}
+                      size="xl"
                       colorScheme="red"
                       opacity={1}
                       className="action-btn"
@@ -464,7 +467,7 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
             )}
           </VStack>
 
-          <Flex justifyContent="center" mt={4}>
+          <Flex justifyContent="center" mt={8}>
             <Button
               onClick={onClose}
               color="white"

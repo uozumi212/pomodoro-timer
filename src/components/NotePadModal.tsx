@@ -25,7 +25,7 @@ interface NotePadModalProps {
 
 const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
   const [noteContent, setNoteContent] = useState<string>("");
-  const [fileName, setFileName] = useState<string>("無題");
+  const [fileName] = useState<string>("無題");
   const toast = useToast();
 
   // Load note content from localStorage when component mounts
