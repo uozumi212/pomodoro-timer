@@ -16,7 +16,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   isBreak,
 }) => {
 
-  const [colorPick, setColorPick] = useState("red.300");
+  const [colorPick, setColorPick] = useState("#50e3c2");
   const [pickerVisible, setPickerVisible] = useState(false);
 
   const bgColor = useColorModeValue("gray.100", "gray.700");

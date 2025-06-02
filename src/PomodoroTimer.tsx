@@ -22,9 +22,11 @@ import {
   ModalBody,
 } from "@chakra-ui/react";
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
-import { lightTheme } from "./theme/theme";
+import { skyBlueGradientTheme} from "./theme/theme";
 import SoundComponent from "./components/SoundComponent";
 import ModalComponent from "./components/ModalComponent";
+import TaskNotesModal from "./components/TaskNotesModal";
+import NotePadModal from "./components/NotePadModal";
 import useTimer from "./hooks/useTimer";
 import TimerDisplay from "./components/TimerDisplay";
 import PlayIconButton from "./components/PlayIconButton";
@@ -35,11 +37,13 @@ import useTimerSound from "./hooks/useTimerSound";
 const PomodoroTimer: React.FC = () => {
   const sound = useTimerSound();
   const timer = useTimer({ playSound: sound.playSound, audioRef: sound.audioRef });
-  const [currentTheme, setCurrentTheme] = useState("light");
-  const [theme, setTheme] = useState(lightTheme);
+  const [currentTheme, setCurrentTheme] = useState("skyBlue");
+  const [theme, setTheme] = useState(skyBlueGradientTheme);
   const [isModalOpen1, setIsModalOpen1] = useState(false);
   const [isModalOpen2, setIsModalOpen2] = useState(false);
   const [isTimePopupOpen, setIsTimePopupOpen] = useState(false);
+  const [isTaskNotesOpen, setIsTaskNotesOpen] = useState(false);
+  const [isNotePadOpen, setIsNotePadOpen] = useState(false);
   const getCurrentTime = () => {
     const now = new Date();
     return now.toLocaleTimeString("ja-JP", {
@@ -82,7 +86,7 @@ const PomodoroTimer: React.FC = () => {
 
   const formatter = () => {
     const year = now.getFullYear();
-    const month = now.getMonth() + 1;
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const date = now.getDate();
     return `${year}年${month}月${date}日`;
   }
@@ -155,7 +159,7 @@ const PomodoroTimer: React.FC = () => {
               <option value="yellow">黄色</option>
               <option value="green">緑色</option>
               <option value="purple">紫色</option>
-              <option value="skyBlue">水色</option>
+              <option value="skyBlue" selected>水色</option>
             </Select>
           </Flex>
 
@@ -172,7 +176,26 @@ const PomodoroTimer: React.FC = () => {
             <Button onClick={() => setIsTimePopupOpen(prev => !prev)}  ml={2} w={157}>
                 {isTimePopupOpen ? '現在時刻を閉じる' : '現在時刻を表示' }
             </Button>
+          </Flex>
 
+          <Flex mt={3}>
+            <Button
+              onClick={() => setIsTaskNotesOpen(true)}
+              w={150}
+              colorScheme="teal"
+              fontSize={16}
+            >
+              タスクメモ
+            </Button>
+            <Button
+              onClick={() => setIsNotePadOpen(true)}
+              w={160}
+              colorScheme="blue"
+              fontSize={16}
+              ml={2}
+            >
+              メモ帳
+            </Button>
           </Flex>
           <SoundComponent
             volume={sound.volume}
@@ -200,10 +223,10 @@ const PomodoroTimer: React.FC = () => {
           onClose={() => setIsTimePopupOpen(false)}
           blockScrollOnMount={false}
           isCentered={false}
-          closeOnOverlayClick={false}
+          // closeOnOverlayClick={false}
           closeOnEsc={false}
       >
-        <ModalOverlay backgroundColor="transparent" />
+        <ModalOverlay sx={{ pointerEvents: "none" }} backgroundColor="transparent" />
         <ModalContent
             position="fixed"
             draggable="true"
@@ -325,6 +348,16 @@ const PomodoroTimer: React.FC = () => {
             </Button>
         </ModalContent>
       </Modal>
+
+      <TaskNotesModal
+        isOpen={isTaskNotesOpen}
+        onClose={() => setIsTaskNotesOpen(false)}
+      />
+
+      <NotePadModal
+        isOpen={isNotePadOpen}
+        onClose={() => setIsNotePadOpen(false)}
+      />
     </VStack>
   );
 };

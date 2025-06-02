@@ -3,7 +3,7 @@ import { lightTheme, darkTheme, retroTheme, sunsetOradientTheme, oceanGradientTh
 import { ThemeOverride } from "@chakra-ui/react";
 
 
-const useThemeSwitcher = (currentTheme: string, setTheme: (thme: ThemeOverride) => void) => {
+const useThemeSwitcher = (currentTheme: string, setTheme: (theme: ThemeOverride) => void) => {
   // テーマ変更のための処理
   useEffect(() => {
     switch (currentTheme) {
