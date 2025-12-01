@@ -8,7 +8,7 @@ import {
   SliderThumb,
   SliderTrack,
   Text,
-  Box,
+  Tooltip,
 } from "@chakra-ui/react";
 import { FaMinus, FaPlus, FaUpload } from "react-icons/fa";
 import { useEffect } from "react";
@@ -26,19 +26,19 @@ interface SoundComponentProps {
 }
 
 const SoundComponent: React.FC<SoundComponentProps> = ({
-    volume,
-    setVolume,
-    handleSoundUpload,
-    customSoundName,
-    bgColor,
-    audioRef,
-    handleMinus,
-    handlePlus,
-    playSound,
-  }) => {
+  volume,
+  setVolume,
+  handleSoundUpload,
+  customSoundName,
+  bgColor,
+  audioRef,
+  handleMinus,
+  handlePlus,
+  playSound,
+}) => {
   useEffect(() => {
     if (audioRef.current) {
-     audioRef.current.volume = volume / 100;
+      audioRef.current.volume = volume / 100;
     }
   }, [volume, audioRef]);
 
@@ -58,27 +58,31 @@ const SoundComponent: React.FC<SoundComponentProps> = ({
         <Button onClick={playSound} ml={2} h={50} w={85} fontSize={18}>
           音声
         </Button>
-        <Box
-          border="2px"
-          borderColor="gray.200"
-          borderRadius="md"
-          bg={bgColor}
-          p={2}
-          ml={2}
-          w="160px"
-          isTruncated
-        >
-          <Text
-            textAlign="center"
+        <Tooltip label={customSoundName} hasArrow>
+          <Flex
+            border="2px"
+            borderColor="gray.200"
+            borderRadius="md"
+            bg={bgColor}
+            ml={1}
+            w="160px"
+            h="50px"
             alignItems="center"
-            mt={1}
-            color="black"
-            fontWeight="bold"
-            fontSize={16}
+            justifyContent="center"
+            px={2}
           >
-            {customSoundName}
-          </Text>
-        </Box>
+            <Text
+              color="black"
+              fontWeight="bold"
+              fontSize={16}
+              isTruncated
+              width="100%"
+              textAlign="center"
+            >
+              {customSoundName}
+            </Text>
+          </Flex>
+        </Tooltip>
       </Flex>
 
       <Flex alignItems="center" width="100%" mt={3}>

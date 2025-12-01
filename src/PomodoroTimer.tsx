@@ -22,7 +22,7 @@ import {
   ModalBody,
 } from "@chakra-ui/react";
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
-import { skyBlueGradientTheme} from "./theme/theme";
+import { skyBlueGradientTheme } from "./theme/theme";
 import SoundComponent from "./components/SoundComponent";
 import ModalComponent from "./components/ModalComponent";
 import TaskNotesModal from "./components/TaskNotesModal";
@@ -130,6 +130,7 @@ const PomodoroTimer: React.FC = () => {
               defaultValue={25}
               bg={bgColor}
               color="black"
+              borderRadius="md"
             >
               <NumberInputField
                 placeholder="分単位で入力"
@@ -173,8 +174,8 @@ const PomodoroTimer: React.FC = () => {
             >
               おすすめテーマ
             </Button>
-            <Button onClick={() => setIsTimePopupOpen(prev => !prev)}  ml={2} w={157}>
-                {isTimePopupOpen ? '現在時刻を閉じる' : '現在時刻を表示' }
+            <Button onClick={() => setIsTimePopupOpen(prev => !prev)} ml={2} w={157}>
+              {isTimePopupOpen ? '現在時刻を閉じる' : '現在時刻を表示'}
             </Button>
           </Flex>
 
@@ -219,79 +220,78 @@ const PomodoroTimer: React.FC = () => {
         <ToastContainer />
       </ChakraProvider>
       <Modal
-          isOpen={isTimePopupOpen}
-          onClose={() => setIsTimePopupOpen(false)}
-          blockScrollOnMount={false}
-          isCentered={false}
-          // closeOnOverlayClick={false}
-          closeOnEsc={false}
+        isOpen={isTimePopupOpen}
+        onClose={() => setIsTimePopupOpen(false)}
+        blockScrollOnMount={false}
+        isCentered={false}
+        closeOnEsc={false}
       >
         <ModalOverlay sx={{ pointerEvents: "none" }} backgroundColor="transparent" />
         <ModalContent
-            position="fixed"
-            draggable="true"
-            minWidth="250px"
-            width="500px"
-            maxWidth="80vw"
-            minHeight="150px"
-            maxHeight="80vh"
-            top="20%"
-            right="5%"
-            onDragStart={(e) => {
-              const target = e.target as HTMLDivElement;
-              const rect = target.getBoundingClientRect();
-              const x = e.clientX - rect.left;
-              const y = e.clientY - rect.top;
-              target.dataset.x = x.toString();
-              target.dataset.y = y.toString();
-            }}
-            onDrag={(e) => {
-              if (e.clientX === 0 && e.clientY === 0) return;
-              const target = e.target as HTMLDivElement;
-              const x = parseInt(target.dataset.x || "0");
-              const y = parseInt(target.dataset.y || "0");
-              target.style.left = `${e.clientX - x}px`;
-              target.style.top = `${e.clientY - y}px`;
-            }}
-            sx={{
-                  backgroundColor: 'white',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0 , 0.1)',
-                  resize: 'both',
-                  overflow: 'auto',
-                  '&:hover': {
-                    boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)'
-                  },
-                  '&:active': {
-                    cursor: 'move'
-                  },
-                  // リサイズハンドルをカスタマイズ
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: '0',
-                    right: '0',
-                    width: '15px',
-                    height: '15px',
-                    cursor: 'nwse-resize',
-                    background: 'linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.2) 50%)',
-                }
-            }}
+          position="fixed"
+          draggable="true"
+          minWidth="250px"
+          width="500px"
+          maxWidth="80vw"
+          minHeight="150px"
+          maxHeight="80vh"
+          top="20%"
+          right="5%"
+          onDragStart={(e) => {
+            const target = e.target as HTMLDivElement;
+            const rect = target.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            target.dataset.x = x.toString();
+            target.dataset.y = y.toString();
+          }}
+          onDrag={(e) => {
+            if (e.clientX === 0 && e.clientY === 0) return;
+            const target = e.target as HTMLDivElement;
+            const x = parseInt(target.dataset.x || "0");
+            const y = parseInt(target.dataset.y || "0");
+            target.style.left = `${e.clientX - x}px`;
+            target.style.top = `${e.clientY - y}px`;
+          }}
+          sx={{
+            backgroundColor: 'white',
+            border: '1px solid #E2E8F0',
+            borderRadius: '8px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0 , 0.1)',
+            resize: 'both',
+            overflow: 'auto',
+            '&:hover': {
+              boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)'
+            },
+            '&:active': {
+              cursor: 'move'
+            },
+            // リサイズハンドルをカスタマイズ
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: '0',
+              right: '0',
+              width: '15px',
+              height: '15px',
+              cursor: 'nwse-resize',
+              background: 'linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.2) 50%)',
+            }
+          }}
         >
           <ModalHeader
-              sx={{
-                textAlign: 'center',
-                cursor: 'move',
-                borderBottom: '1px solid #E2E8F0',
-                backgroundColor: '#F7FAFC',
-                borderTopRadius: '8px',
-                fontWeight: 'bold',
-                userSelect: 'none',
-                color: 'black',
-                fontSize: '20px',
-                padding: '10px 0',
-              }}
+            sx={{
+              textAlign: 'center',
+              cursor: 'move',
+              borderBottom: '1px solid #E2E8F0',
+              backgroundColor: '#F7FAFC',
+              borderTopRadius: '8px',
+              fontWeight: 'bold',
+              userSelect: 'none',
+              color: 'black',
+              fontSize: '20px',
+              padding: '10px 0',
+            }}
           >
             <Flex>
               <Text ml="10px">
@@ -303,49 +303,50 @@ const PomodoroTimer: React.FC = () => {
             </Flex>
           </ModalHeader>
           <ModalCloseButton
-              sx={{
-                position: 'absolute',
-                right: '8px',
-                top: '13px',
-                color: 'black',
-                fontSize: '20px',
-                '&:hover': {
-                  backgroundColor: '#EDF2F7'
-                }
-              }}
+            sx={{
+              position: 'absolute',
+              right: '8px',
+              top: '13px',
+              color: 'black',
+              fontSize: '20px',
+              '&:hover': {
+                backgroundColor: '#EDF2F7'
+              }
+            }}
           />
 
           <ModalBody
-              sx={{
-                padding: '20px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+            sx={{
+              padding: '20px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
           >
             <Text
-                fontSize="30px"
-                fontWeight="bold"
-                sx={{
-                  color: '#2D3748',
-                  textAlign: 'center',
-                  userSelect: 'none'
-                }}
+              fontSize="30px"
+              fontWeight="bold"
+              sx={{
+                color: '#2D3748',
+                textAlign: 'center',
+                userSelect: 'none'
+              }}
             >
               {currentTime}
             </Text>
           </ModalBody>
-            <Button
-                onClick={() => setIsTimePopupOpen(false)}
-                backgroundColor="#66CCFF"
-                color="white"
-                width="50%"
-                margin="auto"
-                borderRadius="5px"
-                padding={10}
-                mb={30}>
+          <Button
+            onClick={() => setIsTimePopupOpen(false)}
+            backgroundColor="#66CCFF"
+            color="white"
+            width="50%"
+            margin="auto"
+            borderRadius="5px"
+            padding={10}
+            mb={30}
+          >
             閉じる
-            </Button>
+          </Button>
         </ModalContent>
       </Modal>
 
