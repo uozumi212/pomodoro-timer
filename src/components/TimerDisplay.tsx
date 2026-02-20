@@ -12,7 +12,7 @@ interface TimerDisplayProps {
 const TimerDisplay: React.FC<TimerDisplayProps> = ({ formatTime, time, maxTime, isBreak }) => {
 	const [colorPick, setColorPick] = useState("#50e3c2");
 	const [pickerVisible, setPickerVisible] = useState(false);
-	const [animationMode, setAnimationMode] = useState<"radial" | "radial">("radial");
+	const [animationMode, setAnimationMode] = useState<"radial" | "vertial">("radial");
 
 	const bgColor = useColorModeValue("gray.100", "gray.700");
 	const textColor = useColorModeValue("gray.700", "white");
