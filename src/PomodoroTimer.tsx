@@ -23,7 +23,7 @@ import {
 	ModalBody,
 } from "@chakra-ui/react";
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
-import { skyBlueGradientTheme } from "./theme/theme";
+import { darkTheme } from "./theme/theme";
 import SoundComponent from "./components/SoundComponent";
 import ModalComponent from "./components/ModalComponent";
 import TaskNotesModal from "./components/TaskNotesModal";
@@ -34,12 +34,21 @@ import PlayIconButton from "./components/PlayIconButton";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useTimerSound from "./hooks/useTimerSound";
+import { usePersistendState } from "./hooks/usePersistendState";
+import type { TimerSettings } from "./hooks/useTimer";
 
 const PomodoroTimer: React.FC = () => {
+	const [settings, setSettings] = usePersistendState<TimerSettings>("pomodoro.settings", {
+		workMin: 25,
+		shortBreakMin: 5,
+		longBreakMin: 15,
+		longBreakEvery: 4,
+		autoStartNext: true,
+	});
 	const sound = useTimerSound();
-	const timer = useTimer({ playSound: sound.playSound, audioRef: sound.audioRef });
-	const [currentTheme, setCurrentTheme] = useState("skyBlue");
-	const [theme, setTheme] = useState(skyBlueGradientTheme);
+	const timer = useTimer({ playSound: sound.playSound, audioRef: sound.audioRef, settings });
+	const [currentTheme, setCurrentTheme] = usePersistendState<string>("pomodoro.theme", "lightTheme");
+	const [theme, setTheme] = useState(darkTheme);
 	const [isModalOpen1, setIsModalOpen1] = useState(false);
 	const [isModalOpen2, setIsModalOpen2] = useState(false);
 	const [isTimePopupOpen, setIsTimePopupOpen] = useState(false);
@@ -52,6 +61,10 @@ const PomodoroTimer: React.FC = () => {
 			minute: "2-digit",
 			second: "2-digit",
 		});
+	};
+
+	const updateSetting = <K extends keyof TimerSettings>(key: K, value: TimerSettings[K]) => {
+		setSettings((prev) => ({ ...prev, [key]: value }));
 	};
 
 	const [currentTime, setCurrentTime] = useState(getCurrentTime());
@@ -117,7 +130,18 @@ const PomodoroTimer: React.FC = () => {
 
 					{/* 4. 時間入力 ＋ テーマ選択（2等分） */}
 					<Flex gap={3}>
-						<NumberInput onChange={(valueString) => timer.resetTimer(Number(valueString))} min={1} max={60} defaultValue={25} bg={bgColor} color="black" borderRadius="md" flex={1}>
+						<NumberInput
+							// onChange={(valueString) => timer.resetTimer(Number(valueString))}
+							onChange={(v) => updateSetting("workMin", Number(v) || 1)}
+							value={settings.workMin}
+							min={1}
+							max={60}
+							// defaultValue={25}
+							bg={bgColor}
+							color="black"
+							borderRadius="md"
+							flex={1}
+						>
 							<NumberInputField placeholder="作業時間（分）" sx={{ "::placeholder": { fontSize: "15px" } }} fontSize={18} fontWeight={600} />
 						</NumberInput>
 						<Select value={currentTheme} onChange={handleThemeChange} bg={bgColor} color={textColor} fontSize={18} fontWeight={600} flex={1} placeholder="テーマ選択">

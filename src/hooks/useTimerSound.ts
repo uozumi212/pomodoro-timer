@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import defaultSound from "../assets/notification.mp3";
+import { usePersistendState } from "./usePersistendState";
 
 const useTimerSound = () => {
-	const [volume, setVolume] = useState(30);
+	// const [volume, setVolume] = useState(30);
+	const [volume, setVolume] = usePersistendState<number>("pomodoro.volume", 30);
 	const [customSound, setCustomSound] = useState<string | null>(null);
 	const [customSoundName, setCustomSoundName] = useState<string | null>("notification.mp3");
 	const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -52,7 +54,7 @@ const useTimerSound = () => {
 			audioRef.current.currentTime = 0;
 			audioRef.current.play().catch((error) => console.error("音声再生エラー:", error));
 		}
-	}, [customSound]);
+	}, []);
 
 	// コンポーネントのクリーンアップ
 	useEffect(() => {

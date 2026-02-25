@@ -1,6 +1,7 @@
 import { Box, Circle, Text, useColorModeValue, HStack } from "@chakra-ui/react";
 import ColorPickerComponent from "./ColorPickerComponent";
 import React, { useState } from "react";
+import { usePersistendState } from "../hooks/usePersistendState";
 
 interface TimerDisplayProps {
 	formatTime: (time: number) => string;
@@ -10,9 +11,11 @@ interface TimerDisplayProps {
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({ formatTime, time, maxTime, isBreak }) => {
-	const [colorPick, setColorPick] = useState("#50e3c2");
+	// const [colorPick, setColorPick] = useState("#50e3c2");
+	const [colorPick, setColorPick] = usePersistendState<string>("pomodoro.timerColor", "#9df53a");
 	const [pickerVisible, setPickerVisible] = useState(false);
-	const [animationMode, setAnimationMode] = useState<"radial" | "vertical">("radial");
+	// const [animationMode, setAnimationMode] = useState<"radial" | "vertical">("radial");
+	const [animationMode, setAnimationMode] = usePersistendState<"radial" | "vertical">("pomodoro.animationMode", "radial");
 
 	const bgColor = useColorModeValue("gray.100", "gray.700");
 	const textColor = useColorModeValue("gray.700", "white");
