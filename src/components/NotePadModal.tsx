@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -26,6 +26,9 @@ interface NotePadModalProps {
 const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
   const [noteContent, setNoteContent] = useState<string>("");
   const [fileName] = useState<string>("無題");
+  const [modalPosition, setModalPosition] = useState({ top: 100, left: 60 });
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const isDraggingRef = useRef(false);
   const toast = useToast();
 
   // Load note content from localStorage when component mounts
@@ -34,6 +37,30 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
     if (savedContent) {
       setNoteContent(savedContent);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      setModalPosition({
+        left: Math.max(0, event.clientX - dragOffsetRef.current.x),
+        top: Math.max(0, event.clientY - dragOffsetRef.current.y),
+      });
+    };
+
+    const handleMouseUp = () => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      document.body.style.userSelect = "";
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+    };
   }, []);
 
   // Save note content to localStorage
@@ -70,6 +97,22 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleDragStart = (e: React.MouseEvent<HTMLElement>) => {
+    if (e.button !== 0) return;
+    if (isDraggingRef.current) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("button,input,textarea,select,a,[role='button'],[contenteditable='true']")) return;
+    if (target.closest("[data-no-drag='true']")) return;
+
+    e.preventDefault();
+    isDraggingRef.current = true;
+    dragOffsetRef.current = {
+      x: e.clientX - modalPosition.left,
+      y: e.clientY - modalPosition.top,
+    };
+    document.body.style.userSelect = "none";
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -83,31 +126,16 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
       <ModalOverlay sx={{ pointerEvents: "none" }} backgroundColor="transparent" />
       <ModalContent
         position="fixed"
-        draggable="true"
         minWidth="400px"
         width="500px"
         height="100px"
         maxWidth="90vw"
         minHeight="400px"
         maxHeight="90vh"
-        top="15%"
-        left="4%"
-        onDragStart={(e) => {
-          const target = e.target as HTMLDivElement;
-          const rect = target.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          target.dataset.x = x.toString();
-          target.dataset.y = y.toString();
-        }}
-        onDrag={(e) => {
-          if (e.clientX === 0 && e.clientY === 0) return;
-          const target = e.target as HTMLDivElement;
-          const x = parseInt(target.dataset.x || "0");
-          const y = parseInt(target.dataset.y || "0");
-          target.style.left = `${e.clientX - x}px`;
-          target.style.top = `${e.clientY - y}px`;
-        }}
+        top={`${modalPosition.top}px`}
+        left={`${modalPosition.left}px`}
+        onMouseDown={handleDragStart}
+        onDragStart={(e) => e.preventDefault()}
         sx={{
           backgroundColor: 'white',
           border: '1px solid #E2E8F0',
@@ -206,6 +234,7 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
           }}
         >
           <Textarea
+            data-no-drag="true"
             value={noteContent}
             onChange={(e) => setNoteContent(e.target.value)}
             onKeyDown={handleKeyDown}

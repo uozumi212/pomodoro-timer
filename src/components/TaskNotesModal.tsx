@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	Modal,
 	ModalOverlay,
@@ -48,6 +48,9 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 	const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [filterCategory, setFilterCategory] = useState<string>("");
+	const [modalPosition, setModalPosition] = useState({ top: 120, left: 80 });
+	const dragOffsetRef = useRef({ x: 0, y: 0 });
+	const isDraggingRef = useRef(false);
 	const toast = useToast();
 
 	// Load notes from localStorage when component mounts
@@ -57,7 +60,7 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 			try {
 				const parsedNotes = JSON.parse(savedNotes);
 				setNotes(parsedNotes);
-			} catch (e: any) {
+			} catch {
 				if (typeof savedNotes === "string") {
 					const newNote = {
 						id: Date.now().toString(),
@@ -68,6 +71,30 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 				}
 			}
 		}
+	}, []);
+
+	useEffect(() => {
+		const handleMouseMove = (event: MouseEvent) => {
+			if (!isDraggingRef.current) return;
+			setModalPosition({
+				left: Math.max(0, event.clientX - dragOffsetRef.current.x),
+				top: Math.max(0, event.clientY - dragOffsetRef.current.y),
+			});
+		};
+
+		const handleMouseUp = () => {
+			if (!isDraggingRef.current) return;
+			isDraggingRef.current = false;
+			document.body.style.userSelect = "";
+		};
+
+		window.addEventListener("mousemove", handleMouseMove);
+		window.addEventListener("mouseup", handleMouseUp);
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("mouseup", handleMouseUp);
+			document.body.style.userSelect = "";
+		};
 	}, []);
 
 	// Add or update a note
@@ -152,36 +179,34 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 		});
 	};
 
+	const handleDragStart = (e: React.MouseEvent<HTMLElement>) => {
+		if (e.button !== 0) return;
+		const target = e.target as HTMLElement;
+		if (target.closest("button,input,textarea,select,a,[role='button'],[contenteditable='true']")) return;
+		if (target.closest("[data-no-drag='true']")) return;
+
+		isDraggingRef.current = true;
+		dragOffsetRef.current = {
+			x: e.clientX - modalPosition.left,
+			y: e.clientY - modalPosition.top,
+		};
+		document.body.style.userSelect = "none";
+	};
+
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} blockScrollOnMount={false} isCentered={false} closeOnOverlayClick={true} closeOnEsc={true}>
 			<ModalOverlay sx={{ pointerEvents: "none" }} backgroundColor="transparent" />
 			<ModalContent
 				position="fixed"
-				draggable="true"
 				minWidth="300px"
 				width="500px"
 				maxWidth="80vw"
 				minHeight="300px"
 				maxHeight="80vh"
-				top="20%"
-				left="5%"
+				top={`${modalPosition.top}px`}
+				left={`${modalPosition.left}px`}
 				color="black"
-				onDragStart={(e) => {
-					const target = e.target as HTMLDivElement;
-					const rect = target.getBoundingClientRect();
-					const x = e.clientX - rect.left;
-					const y = e.clientY - rect.top;
-					target.dataset.x = x.toString();
-					target.dataset.y = y.toString();
-				}}
-				onDrag={(e) => {
-					if (e.clientX === 0 && e.clientY === 0) return;
-					const target = e.target as HTMLDivElement;
-					const x = parseInt(target.dataset.x || "0");
-					const y = parseInt(target.dataset.y || "0");
-					target.style.left = `${e.clientX - x}px`;
-					target.style.top = `${e.clientY - y}px`;
-				}}
+				onMouseDown={handleDragStart}
 				sx={{
 					backgroundColor: "white",
 					border: "1px solid #E2E8F0",
@@ -411,7 +436,9 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 												</Text>
 											)}
 										</Flex>
-										<Text whiteSpace="pre-wrap">{note.text}</Text>
+										<Text data-no-drag="true" whiteSpace="pre-wrap" userSelect="text" cursor="text">
+											{note.text}
+										</Text>
 									</Box>
 								))
 						)}
