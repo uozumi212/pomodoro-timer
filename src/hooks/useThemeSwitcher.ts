@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { lightTheme, darkTheme, retroTheme, sunsetOradientTheme, oceanGradientTheme, yellowGradientTheme, greenGradientTheme, purpleGradientTheme, skyBlueGradientTheme } from '../theme/theme';
 import { ThemeOverride } from "@chakra-ui/react";
 
-
 const useThemeSwitcher = (currentTheme: string, setTheme: (theme: ThemeOverride) => void) => {
   // テーマ変更のための処理
   useEffect(() => {
@@ -33,6 +32,9 @@ const useThemeSwitcher = (currentTheme: string, setTheme: (theme: ThemeOverride)
         break;
       case 'skyBlue':
         setTheme(skyBlueGradientTheme);
+        break;
+      default:
+        setTheme(lightTheme);
         break;
     }
   }, [currentTheme, setTheme]);

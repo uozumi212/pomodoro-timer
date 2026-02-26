@@ -9,19 +9,12 @@ interface UseTimerParams {
 
 interface TimerHookReturn {
 	time: number;
-	setTime: React.Dispatch<React.SetStateAction<number>>;
 	isActive: boolean;
-	setIsActive: React.Dispatch<React.SetStateAction<boolean>>;
 	isBreak: boolean;
-	setIsBreak: React.Dispatch<React.SetStateAction<boolean>>;
 	maxTime: number;
-	setMaxTime: React.Dispatch<React.SetStateAction<number>>;
 	formatTime: (time: number) => string;
-	resetTimer: (minutes: number) => void;
+	resetTimer: (phase: Phase) => void;
 	toggleTimer: () => void;
-	animate: (time: number) => void;
-	showNotification: () => void;
-	setNotificationShown: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export type Phase = "work" | "shortBreak" | "longBreak";
@@ -41,35 +34,47 @@ const phaseToSeconds = (phase: Phase, s: TimerSettings) => {
 };
 
 const useTimer = ({ playSound, settings }: UseTimerParams): TimerHookReturn => {
-	// const [time, setTime] = useState(1500);
 	const [phase, setPhase] = useState<Phase>("work");
 	const [completedWorkCount, setCompletedWorkCount] = useState(0);
+	const [time, setTime] = useState(() => phaseToSeconds("work", settings));
+	const [maxTime, setMaxTime] = useState(() => phaseToSeconds("work", settings));
+	const [isActive, setIsActive] = useState(false);
+	const [notificationShown, setNotificationShown] = useState(false);
+	const requestRef = useRef<number>();
+	const previousTimeRef = useRef<number>();
+	const phaseRef = useRef<Phase>("work");
+	const isBreak = phase !== "work";
+
+	const transitionToPhase = useCallback(
+		(nextPhase: Phase, shouldAutoStart: boolean) => {
+			setPhase(nextPhase);
+			phaseRef.current = nextPhase;
+			const seconds = phaseToSeconds(nextPhase, settings);
+			setTime(seconds);
+			setMaxTime(seconds);
+			setNotificationShown(false);
+			setIsActive(shouldAutoStart);
+		},
+		[settings],
+	);
+
+	const resetTimer = useCallback(
+		(targetPhase: Phase) => {
+			transitionToPhase(targetPhase, false);
+		},
+		[transitionToPhase],
+	);
 
 	const handlePhaseEnd = useCallback(() => {
 		if (phase === "work") {
 			const nextCount = completedWorkCount + 1;
 			setCompletedWorkCount(nextCount);
-
 			const nextPhase = nextCount % settings.longBreakEvery === 0 ? "longBreak" : "shortBreak";
-			setPhase(nextPhase);
-			setTime(phaseToSeconds(nextPhase, settings));
-			const nextSeconds = phaseToSeconds(nextPhase, settings);
-			setMaxTime(nextSeconds);
-			setIsActive(settings.autoStartNext);
+			transitionToPhase(nextPhase, settings.autoStartNext);
 		} else {
-			setPhase("work");
-			setTime(phaseToSeconds("work", settings));
-			setIsActive(settings.autoStartNext);
+			transitionToPhase("work", settings.autoStartNext);
 		}
-	}, [phase, completedWorkCount, settings]);
-
-	const [time, setTime] = useState(() => phaseToSeconds("work", settings));
-	const [isActive, setIsActive] = useState(false);
-	const [isBreak, setIsBreak] = useState(false);
-	const [maxTime, setMaxTime] = useState(1500);
-	const [notificationShown, setNotificationShown] = useState(false);
-	const requestRef = useRef<number>();
-	const previousTimeRef = useRef<number>();
+	}, [phase, completedWorkCount, settings, transitionToPhase]);
 
 	// お知らせの表示と音声の再生
 	const showNotification = useCallback(() => {
@@ -90,40 +95,30 @@ const useTimer = ({ playSound, settings }: UseTimerParams): TimerHookReturn => {
 		return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 	};
 
-	// タイマーリセット機能
-	const resetTimer = useCallback((minutes: number) => {
-		if (minutes > 0) {
-			const totalSeconds = minutes * 60;
-			setMaxTime(totalSeconds);
-			setTime(totalSeconds);
-			setIsActive(false);
-			setNotificationShown(false);
-		}
-	}, []);
-
 	// タイマー動作中か判定
 	const toggleTimer = () => {
-		setIsActive(!isActive);
+		setIsActive((prev) => !prev);
 	};
 
 	useEffect(() => {
 		if (time <= 0 && !notificationShown) {
 			showNotification();
 			setNotificationShown(true);
-			// setIsActive(false);
-			// setIsBreak(!isBreak);
-			// resetTimer(isBreak ? 25 : 5);
 			handlePhaseEnd();
 		}
 	}, [time, notificationShown, showNotification, handlePhaseEnd]);
 
 	useEffect(() => {
-		if (!isActive) {
-			const newTime = phaseToSeconds(phase, settings);
-			setTime(newTime);
-			setMaxTime(newTime);
-			setNotificationShown(false);
-		}
+		phaseRef.current = phase;
+	}, [phase]);
+
+	useEffect(() => {
+		const currentPhase = phaseRef.current;
+		const seconds = phaseToSeconds(currentPhase, settings);
+		setTime(seconds);
+		setMaxTime(seconds);
+		setIsActive(false);
+		setNotificationShown(false);
 	}, [settings]);
 
 	// タイマーのアニメーション設定
@@ -156,19 +151,12 @@ const useTimer = ({ playSound, settings }: UseTimerParams): TimerHookReturn => {
 
 	return {
 		time,
-		setTime,
 		isActive,
-		setIsActive,
 		isBreak,
-		setIsBreak,
 		maxTime,
-		setMaxTime,
 		formatTime,
 		resetTimer,
 		toggleTimer,
-		animate,
-		showNotification,
-		setNotificationShown,
 	};
 };
 

@@ -43,7 +43,7 @@ const ColorPickerComponent: React.FC<ColorPickerComponentProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [pickerRef]);
+  });
 
   return (
     <VStack spacing={6}>

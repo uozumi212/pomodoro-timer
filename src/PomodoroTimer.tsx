@@ -10,8 +10,11 @@ import {
 	Flex,
 	NumberInput,
 	NumberInputField,
+	FormControl,
+	FormLabel,
 	Select,
 	SimpleGrid,
+	Switch,
 	Text,
 	useColorModeValue,
 	VStack,
@@ -37,6 +40,19 @@ import useTimerSound from "./hooks/useTimerSound";
 import { usePersistendState } from "./hooks/usePersistendState";
 import type { TimerSettings } from "./hooks/useTimer";
 
+const THEME_OPTIONS = ["light", "dark", "retro", "sunset", "ocean", "yellow", "green", "purple", "skyBlue"] as const;
+const THEME_LABELS: Record<(typeof THEME_OPTIONS)[number], string> = {
+	light: "ライト",
+	dark: "ダーク",
+	retro: "レトロ",
+	sunset: "赤色",
+	ocean: "青色",
+	yellow: "黄色",
+	green: "緑色",
+	purple: "紫色",
+	skyBlue: "水色",
+};
+
 const PomodoroTimer: React.FC = () => {
 	const [settings, setSettings] = usePersistendState<TimerSettings>("pomodoro.settings", {
 		workMin: 25,
@@ -47,13 +63,19 @@ const PomodoroTimer: React.FC = () => {
 	});
 	const sound = useTimerSound();
 	const timer = useTimer({ playSound: sound.playSound, audioRef: sound.audioRef, settings });
-	const [currentTheme, setCurrentTheme] = usePersistendState<string>("pomodoro.theme", "lightTheme");
+	const [currentTheme, setCurrentTheme] = usePersistendState<string>("pomodoro.theme", "light");
 	const [theme, setTheme] = useState(darkTheme);
 	const [isModalOpen1, setIsModalOpen1] = useState(false);
 	const [isModalOpen2, setIsModalOpen2] = useState(false);
 	const [isTimePopupOpen, setIsTimePopupOpen] = useState(false);
 	const [isTaskNotesOpen, setIsTaskNotesOpen] = useState(false);
 	const [isNotePadOpen, setIsNotePadOpen] = useState(false);
+	useEffect(() => {
+		if (!THEME_OPTIONS.includes(currentTheme as (typeof THEME_OPTIONS)[number])) {
+			setCurrentTheme("light");
+		}
+	}, [currentTheme, setCurrentTheme]);
+
 	const getCurrentTime = () => {
 		const now = new Date();
 		return now.toLocaleTimeString("ja-JP", {
@@ -70,6 +92,7 @@ const PomodoroTimer: React.FC = () => {
 	const [currentTime, setCurrentTime] = useState(getCurrentTime());
 
 	const bgColor = useColorModeValue("gray.100", "gray.700");
+	const panelBg = useColorModeValue("white", "gray.800");
 	const textColor = useColorModeValue("gray.700", "white");
 
 	// テーマ変更のための useEffectを使用するカスタムフック
@@ -124,38 +147,68 @@ const PomodoroTimer: React.FC = () => {
 					</Center>
 
 					{/* 3. 再生ボタン群（中央揃え） */}
-					<Center>
-						<PlayIconButton isActive={timer.isActive} toggleTimer={timer.toggleTimer} setIsBreak={timer.setIsBreak} resetTimer={timer.resetTimer} />
-					</Center>
+								<Center>
+									<PlayIconButton isActive={timer.isActive} toggleTimer={timer.toggleTimer} resetTimer={timer.resetTimer} />
+								</Center>
 
-					{/* 4. 時間入力 ＋ テーマ選択（2等分） */}
-					<Flex gap={3}>
-						<NumberInput
-							// onChange={(valueString) => timer.resetTimer(Number(valueString))}
-							onChange={(v) => updateSetting("workMin", Number(v) || 1)}
-							value={settings.workMin}
-							min={1}
-							max={60}
-							// defaultValue={25}
-							bg={bgColor}
-							color="black"
-							borderRadius="md"
-							flex={1}
-						>
-							<NumberInputField placeholder="作業時間（分）" sx={{ "::placeholder": { fontSize: "15px" } }} fontSize={18} fontWeight={600} />
-						</NumberInput>
-						<Select value={currentTheme} onChange={handleThemeChange} bg={bgColor} color={textColor} fontSize={18} fontWeight={600} flex={1} placeholder="テーマ選択">
-							<option value="light">ライト</option>
-							<option value="dark">ダーク</option>
-							<option value="retro">レトロ</option>
-							<option value="sunset">赤色</option>
-							<option value="ocean">青色</option>
-							<option value="yellow">黄色</option>
-							<option value="green">緑色</option>
-							<option value="purple">紫色</option>
-							<option value="skyBlue">水色</option>
-						</Select>
-					</Flex>
+								{/* 4. タイマー設定 ＋ テーマ */}
+								<Box bg={panelBg} borderRadius="md" p={4} color={textColor} boxShadow="sm">
+									<SimpleGrid columns={{ base: 1, sm: 2 }} spacing={3}>
+																						<NumberInput
+																							value={settings.workMin}
+																							min={1}
+																							max={180}
+																							bg={bgColor}
+																							color={textColor}
+											onChange={(_, valueAsNumber) => updateSetting("workMin", Number.isFinite(valueAsNumber) && valueAsNumber > 0 ? valueAsNumber : 1)}
+										>
+											<NumberInputField placeholder="作業時間（分）" sx={{ "::placeholder": { fontSize: "15px" } }} fontSize={16} fontWeight={600} />
+										</NumberInput>
+																						<NumberInput
+																							value={settings.shortBreakMin}
+																							min={1}
+																							max={60}
+																							bg={bgColor}
+																							color={textColor}
+											onChange={(_, valueAsNumber) => updateSetting("shortBreakMin", Number.isFinite(valueAsNumber) && valueAsNumber > 0 ? valueAsNumber : 1)}
+										>
+											<NumberInputField placeholder="短休憩（分）" sx={{ "::placeholder": { fontSize: "15px" } }} fontSize={16} fontWeight={600} />
+										</NumberInput>
+																						<NumberInput
+																							value={settings.longBreakMin}
+																							min={1}
+																							max={90}
+																							bg={bgColor}
+																							color={textColor}
+											onChange={(_, valueAsNumber) => updateSetting("longBreakMin", Number.isFinite(valueAsNumber) && valueAsNumber > 0 ? valueAsNumber : 5)}
+										>
+											<NumberInputField placeholder="長休憩（分）" sx={{ "::placeholder": { fontSize: "15px" } }} fontSize={16} fontWeight={600} />
+										</NumberInput>
+																						<NumberInput
+																							value={settings.longBreakEvery}
+																							min={1}
+																							max={12}
+																							bg={bgColor}
+																							color={textColor}
+											onChange={(_, valueAsNumber) => updateSetting("longBreakEvery", Number.isFinite(valueAsNumber) && valueAsNumber > 0 ? Math.floor(valueAsNumber) : 4)}
+										>
+											<NumberInputField placeholder="長休憩の間隔（回）" sx={{ "::placeholder": { fontSize: "15px" } }} fontSize={16} fontWeight={600} />
+										</NumberInput>
+									</SimpleGrid>
+									<FormControl display="flex" alignItems="center" justifyContent="space-between" mt={4} gap={3}>
+										<FormLabel mb="0" fontWeight={600} fontSize="sm">
+											自動で次フェーズを開始
+										</FormLabel>
+										<Switch isChecked={settings.autoStartNext} onChange={(e) => updateSetting("autoStartNext", e.target.checked)} colorScheme="teal" />
+									</FormControl>
+									<Select mt={4} value={currentTheme} onChange={handleThemeChange} bg={bgColor} color={textColor} fontSize={16} fontWeight={600} placeholder="テーマ選択">
+										{THEME_OPTIONS.map((option) => (
+											<option key={option} value={option}>
+												{THEME_LABELS[option]}
+											</option>
+										))}
+									</Select>
+								</Box>
 
 					{/* 5. ユーティリティボタン（3等分） */}
 					<SimpleGrid columns={3} spacing={3}>

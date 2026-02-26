@@ -53,7 +53,6 @@ const TaskNotesModal: React.FC<TaskNotesModalProps> = ({ isOpen, onClose }) => {
 	const isDraggingRef = useRef(false);
 	const toast = useToast();
 
-	// Load notes from localStorage when component mounts
 	useEffect(() => {
 		const savedNotes = localStorage.getItem("pomodoroTaskNotes");
 		if (savedNotes) {
