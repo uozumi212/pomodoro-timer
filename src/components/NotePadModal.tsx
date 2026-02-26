@@ -101,7 +101,12 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
     if (e.button !== 0) return;
     if (isDraggingRef.current) return;
     const target = e.target as HTMLElement;
-    if (target.closest("button,input,textarea,select,a,[role='button'],[contenteditable='true']")) return;
+    if (
+      target.closest(
+        "button,input,textarea,select,a,[role='button'],[contenteditable='true']",
+      )
+    )
+      return;
     if (target.closest("[data-no-drag='true']")) return;
 
     e.preventDefault();
@@ -123,7 +128,10 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
       closeOnEsc={true}
       size="xl"
     >
-      <ModalOverlay sx={{ pointerEvents: "none" }} backgroundColor="transparent" />
+      <ModalOverlay
+        sx={{ pointerEvents: "none" }}
+        backgroundColor="transparent"
+      />
       <ModalContent
         position="fixed"
         minWidth="400px"
@@ -137,44 +145,45 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
         onMouseDown={handleDragStart}
         onDragStart={(e) => e.preventDefault()}
         sx={{
-          backgroundColor: 'white',
-          border: '1px solid #E2E8F0',
-          borderRadius: '4px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          resize: 'both',
-          overflow: 'auto',
-          '&:hover': {
-            boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)'
+          backgroundColor: "white",
+          border: "1px solid #E2E8F0",
+          borderRadius: "4px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          resize: "both",
+          overflow: "auto",
+          "&:hover": {
+            boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
           },
-          '&:active': {
-            cursor: 'move'
+          "&:active": {
+            cursor: "move",
           },
           // リサイズハンドルをカスタマイズ
-          '&::after': {
+          "&::after": {
             content: '""',
-            position: 'absolute',
-            bottom: '0',
-            right: '0',
-            width: '15px',
-            height: '15px',
-            cursor: 'nwse-resize',
-            background: 'linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.2) 50%)',
-          }
+            position: "absolute",
+            bottom: "0",
+            right: "0",
+            width: "15px",
+            height: "15px",
+            cursor: "nwse-resize",
+            background:
+              "linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.2) 50%)",
+          },
         }}
       >
         <ModalHeader
           sx={{
-            textAlign: 'left',
-            cursor: 'move',
-            borderBottom: '1px solid #E2E8F0',
-            backgroundColor: '#F0F0F0',
-            borderTopRadius: '4px',
-            fontWeight: 'bold',
-            userSelect: 'none',
-            color: 'black',
-            fontSize: '16px',
-            padding: '8px 16px',
-            height: '40px',
+            textAlign: "left",
+            cursor: "move",
+            borderBottom: "1px solid #E2E8F0",
+            backgroundColor: "#F0F0F0",
+            borderTopRadius: "4px",
+            fontWeight: "bold",
+            userSelect: "none",
+            color: "black",
+            fontSize: "16px",
+            padding: "8px 16px",
+            height: "40px",
           }}
         >
           <Flex justifyContent="space-between" alignItems="center">
@@ -183,14 +192,14 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
         </ModalHeader>
         <ModalCloseButton
           sx={{
-            position: 'absolute',
-            right: '8px',
-            top: '8px',
-            color: 'black',
-            fontSize: '16px',
-            '&:hover': {
-              backgroundColor: '#EDF2F7'
-            }
+            position: "absolute",
+            right: "8px",
+            top: "8px",
+            color: "black",
+            fontSize: "16px",
+            "&:hover": {
+              backgroundColor: "#EDF2F7",
+            },
           }}
         />
 
@@ -203,7 +212,12 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
           color="black"
         >
           <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} size="sm" variant="ghost">
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon />}
+              size="sm"
+              variant="ghost"
+            >
               ファイル
             </MenuButton>
             <MenuList>
@@ -212,25 +226,36 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
             </MenuList>
           </Menu>
           <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} size="sm" variant="ghost">
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon />}
+              size="sm"
+              variant="ghost"
+            >
               編集
             </MenuButton>
             <MenuList>
-              <MenuItem onClick={() => document.execCommand('cut')}>切り取り (Ctrl+X)</MenuItem>
-              <MenuItem onClick={() => document.execCommand('copy')}>コピー (Ctrl+C)</MenuItem>
-              <MenuItem onClick={() => document.execCommand('paste')}>貼り付け (Ctrl+V)</MenuItem>
+              <MenuItem onClick={() => document.execCommand("cut")}>
+                切り取り (Ctrl+X)
+              </MenuItem>
+              <MenuItem onClick={() => document.execCommand("copy")}>
+                コピー (Ctrl+C)
+              </MenuItem>
+              <MenuItem onClick={() => document.execCommand("paste")}>
+                貼り付け (Ctrl+V)
+              </MenuItem>
             </MenuList>
           </Menu>
         </Flex>
 
         <ModalBody
           sx={{
-            padding: '0',
-            display: 'flex',
-            flexDirection: 'column',
-            height: 'calc(100% - 80px)',
-            overflow: 'hidden',
-            color: 'black',
+            padding: "0",
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100% - 80px)",
+            overflow: "hidden",
+            color: "black",
           }}
         >
           <Textarea
@@ -248,10 +273,10 @@ const NotePadModal: React.FC<NotePadModalProps> = ({ isOpen, onClose }) => {
             borderRadius="0"
             p={4}
             sx={{
-              '&:focus': {
-                boxShadow: 'none',
-                outline: 'none',
-              }
+              "&:focus": {
+                boxShadow: "none",
+                outline: "none",
+              },
             }}
           />
         </ModalBody>

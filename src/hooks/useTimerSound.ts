@@ -3,7 +3,6 @@ import defaultSound from "../assets/notification.mp3";
 import { usePersistendState } from "./usePersistendState";
 
 const useTimerSound = () => {
-	// const [volume, setVolume] = useState(30);
 	const [volume, setVolume] = usePersistendState<number>("pomodoro.volume", 30);
 	const [customSound, setCustomSound] = useState<string | null>(null);
 	const [customSoundName, setCustomSoundName] = useState<string | null>("notification.mp3");
