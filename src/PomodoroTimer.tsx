@@ -77,7 +77,6 @@ const PomodoroTimer: React.FC = () => {
   const sound = useTimerSound();
   const timer = useTimer({
     playSound: sound.playSound,
-    audioRef: sound.audioRef,
     settings,
   });
   const [currentTheme, setCurrentTheme] = usePersistendState<string>(
@@ -172,9 +171,20 @@ const PomodoroTimer: React.FC = () => {
               formatTime={timer.formatTime}
               time={timer.time}
               maxTime={timer.maxTime}
-              isBreak={timer.isBreak}
+              phaseLabel={timer.phaseLabel}
             />
           </Center>
+
+          <Box textAlign="center">
+            <Text fontWeight="semibold">
+              今回の完了：{timer.completedWorkCount}セット
+            </Text>
+            <Text fontSize="sm">
+              {timer.phaseLabel === "長休憩"
+                ? "長休憩の時間です"
+                : `長休憩まであと${timer.workUntilLongBreak}セット`}
+            </Text>
+          </Box>
 
           {/* 3. 再生ボタン群（中央揃え） */}
           <Center>
@@ -194,95 +204,110 @@ const PomodoroTimer: React.FC = () => {
             boxShadow="sm"
           >
             <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={3}>
-              <NumberInput
-                value={settings.workMin}
-                min={1}
-                max={180}
-                bg={bgColor}
-                color={textColor}
-                onChange={(_, valueAsNumber) =>
-                  updateSetting(
-                    "workMin",
-                    Number.isFinite(valueAsNumber) && valueAsNumber > 0
-                      ? valueAsNumber
-                      : 1,
-                  )
-                }
-              >
-                <NumberInputField
-                  placeholder="作業時間（分）"
-                  sx={{ "::placeholder": { fontSize: "15px" } }}
-                  fontSize={16}
-                  fontWeight={600}
-                />
-              </NumberInput>
-              <NumberInput
-                value={settings.shortBreakMin}
-                min={1}
-                max={60}
-                bg={bgColor}
-                color={textColor}
-                onChange={(_, valueAsNumber) =>
-                  updateSetting(
-                    "shortBreakMin",
-                    Number.isFinite(valueAsNumber) && valueAsNumber > 0
-                      ? valueAsNumber
-                      : 1,
-                  )
-                }
-              >
-                <NumberInputField
-                  placeholder="短休憩（分）"
-                  sx={{ "::placeholder": { fontSize: "15px" } }}
-                  fontSize={16}
-                  fontWeight={600}
-                />
-              </NumberInput>
-              <NumberInput
-                value={settings.longBreakMin}
-                min={1}
-                max={90}
-                bg={bgColor}
-                color={textColor}
-                onChange={(_, valueAsNumber) =>
-                  updateSetting(
-                    "longBreakMin",
-                    Number.isFinite(valueAsNumber) && valueAsNumber > 0
-                      ? valueAsNumber
-                      : 5,
-                  )
-                }
-              >
-                <NumberInputField
-                  placeholder="長休憩（分）"
-                  sx={{ "::placeholder": { fontSize: "15px" } }}
-                  fontSize={16}
-                  fontWeight={600}
-                />
-              </NumberInput>
-              <NumberInput
-                value={settings.longBreakEvery}
-                min={1}
-                max={12}
-                bg={bgColor}
-                color={textColor}
-                onChange={(_, valueAsNumber) =>
-                  updateSetting(
-                    "longBreakEvery",
-                    Number.isFinite(valueAsNumber) && valueAsNumber > 0
-                      ? Math.floor(valueAsNumber)
-                      : 4,
-                  )
-                }
-              >
-                <NumberInputField
-                  placeholder="長休憩の間隔（回）"
-                  sx={{ "::placeholder": { fontSize: "15px" } }}
-                  fontSize={16}
-                  fontWeight={600}
-                />
-              </NumberInput>
+              <FormControl id="work-minutes">
+                <FormLabel fontSize="sm">作業時間（分）</FormLabel>
+                <NumberInput
+                  value={settings.workMin}
+                  min={1}
+                  max={180}
+                  bg={bgColor}
+                  color={textColor}
+                  onChange={(_, valueAsNumber) =>
+                    updateSetting(
+                      "workMin",
+                      Number.isFinite(valueAsNumber) && valueAsNumber > 0
+                        ? valueAsNumber
+                        : 1,
+                    )
+                  }
+                >
+                  <NumberInputField
+                    placeholder="作業時間（分）"
+                    sx={{ "::placeholder": { fontSize: "15px" } }}
+                    fontSize={16}
+                    fontWeight={600}
+                  />
+                </NumberInput>
+              </FormControl>
+              <FormControl id="short-break-minutes">
+                <FormLabel fontSize="sm">短休憩（分）</FormLabel>
+                <NumberInput
+                  value={settings.shortBreakMin}
+                  min={1}
+                  max={60}
+                  bg={bgColor}
+                  color={textColor}
+                  onChange={(_, valueAsNumber) =>
+                    updateSetting(
+                      "shortBreakMin",
+                      Number.isFinite(valueAsNumber) && valueAsNumber > 0
+                        ? valueAsNumber
+                        : 1,
+                    )
+                  }
+                >
+                  <NumberInputField
+                    placeholder="短休憩（分）"
+                    sx={{ "::placeholder": { fontSize: "15px" } }}
+                    fontSize={16}
+                    fontWeight={600}
+                  />
+                </NumberInput>
+              </FormControl>
+              <FormControl id="long-break-minutes">
+                <FormLabel fontSize="sm">長休憩（分）</FormLabel>
+                <NumberInput
+                  value={settings.longBreakMin}
+                  min={1}
+                  max={90}
+                  bg={bgColor}
+                  color={textColor}
+                  onChange={(_, valueAsNumber) =>
+                    updateSetting(
+                      "longBreakMin",
+                      Number.isFinite(valueAsNumber) && valueAsNumber > 0
+                        ? valueAsNumber
+                        : 5,
+                    )
+                  }
+                >
+                  <NumberInputField
+                    placeholder="長休憩（分）"
+                    sx={{ "::placeholder": { fontSize: "15px" } }}
+                    fontSize={16}
+                    fontWeight={600}
+                  />
+                </NumberInput>
+              </FormControl>
+              <FormControl id="long-break-every">
+                <FormLabel fontSize="sm">長休憩の間隔（回）</FormLabel>
+                <NumberInput
+                  value={settings.longBreakEvery}
+                  min={1}
+                  max={12}
+                  bg={bgColor}
+                  color={textColor}
+                  onChange={(_, valueAsNumber) =>
+                    updateSetting(
+                      "longBreakEvery",
+                      Number.isFinite(valueAsNumber) && valueAsNumber > 0
+                        ? Math.floor(valueAsNumber)
+                        : 4,
+                    )
+                  }
+                >
+                  <NumberInputField
+                    placeholder="長休憩の間隔（回）"
+                    sx={{ "::placeholder": { fontSize: "15px" } }}
+                    fontSize={16}
+                    fontWeight={600}
+                  />
+                </NumberInput>
+              </FormControl>
             </SimpleGrid>
+            <Text fontSize="xs" mt={3}>
+              計測開始後の時間変更は、次の作業・休憩から適用します。
+            </Text>
             <FormControl
               display="flex"
               alignItems="center"

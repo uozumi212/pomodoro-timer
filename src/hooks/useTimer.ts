@@ -1,163 +1,103 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useReducer } from "react";
 import { toast } from "react-toastify";
+import { createTimerState, timerReducer } from "./timer";
+import type { Phase, TimerSettings } from "./timer";
+
+export type { Phase, TimerSettings } from "./timer";
 
 interface UseTimerParams {
-	playSound: () => void;
-	audioRef: React.RefObject<HTMLAudioElement>;
-	settings: TimerSettings;
+  playSound: () => void;
+  settings: TimerSettings;
 }
 
-interface TimerHookReturn {
-	time: number;
-	isActive: boolean;
-	isBreak: boolean;
-	maxTime: number;
-	formatTime: (time: number) => string;
-	resetTimer: (phase: Phase) => void;
-	toggleTimer: () => void;
-}
-
-export type Phase = "work" | "shortBreak" | "longBreak";
-
-export interface TimerSettings {
-	workMin: number;
-	shortBreakMin: number;
-	longBreakMin: number;
-	longBreakEvery: number;
-	autoStartNext: boolean;
-}
-
-const phaseToSeconds = (phase: Phase, s: TimerSettings) => {
-	if (phase === "work") return s.workMin * 60;
-	if (phase === "shortBreak") return s.shortBreakMin * 60;
-	return s.longBreakMin * 60;
+const formatTime = (time: number) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
-const useTimer = ({ playSound, settings }: UseTimerParams): TimerHookReturn => {
-	const [phase, setPhase] = useState<Phase>("work");
-	const [completedWorkCount, setCompletedWorkCount] = useState(0);
-	const [time, setTime] = useState(() => phaseToSeconds("work", settings));
-	const [maxTime, setMaxTime] = useState(() => phaseToSeconds("work", settings));
-	const [isActive, setIsActive] = useState(false);
-	const [notificationShown, setNotificationShown] = useState(false);
-	const requestRef = useRef<number>();
-	const previousTimeRef = useRef<number>();
-	const phaseRef = useRef<Phase>("work");
-	const isBreak = phase !== "work";
+const useTimer = ({ playSound, settings }: UseTimerParams) => {
+  const [state, dispatch] = useReducer(
+    timerReducer,
+    settings,
+    createTimerState,
+  );
+  const notifiedCompletionRef = useRef(0);
+  const [originalTitle] = useState(() => document.title);
+  const time = Math.ceil(state.remainingMs / 1000);
+  const isActive = state.deadline !== null;
+  const phaseLabel =
+    state.phase === "work"
+      ? "作業"
+      : state.phase === "longBreak"
+        ? "長休憩"
+        : "短休憩";
 
-	const transitionToPhase = useCallback(
-		(nextPhase: Phase, shouldAutoStart: boolean) => {
-			setPhase(nextPhase);
-			phaseRef.current = nextPhase;
-			const seconds = phaseToSeconds(nextPhase, settings);
-			setTime(seconds);
-			setMaxTime(seconds);
-			setNotificationShown(false);
-			setIsActive(shouldAutoStart);
-		},
-		[settings],
-	);
+  useEffect(() => {
+    dispatch({ type: "settings", settings });
+  }, [settings]);
 
-	const resetTimer = useCallback(
-		(targetPhase: Phase) => {
-			transitionToPhase(targetPhase, false);
-		},
-		[transitionToPhase],
-	);
+  useEffect(() => {
+    if (!isActive) return;
+    const tick = () => dispatch({ type: "tick", now: Date.now(), settings });
+    // 呼び出し間隔が遅れても、終了予定時刻との差から残り時間を求める。
+    const intervalId = window.setInterval(tick, 250);
+    document.addEventListener("visibilitychange", tick);
+    window.addEventListener("focus", tick);
+    tick();
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", tick);
+      window.removeEventListener("focus", tick);
+    };
+  }, [isActive, settings]);
 
-	const handlePhaseEnd = useCallback(() => {
-		if (phase === "work") {
-			const nextCount = completedWorkCount + 1;
-			setCompletedWorkCount(nextCount);
-			const nextPhase = nextCount % settings.longBreakEvery === 0 ? "longBreak" : "shortBreak";
-			transitionToPhase(nextPhase, settings.autoStartNext);
-		} else {
-			transitionToPhase("work", settings.autoStartNext);
-		}
-	}, [phase, completedWorkCount, settings, transitionToPhase]);
+  useEffect(() => {
+    if (state.completionId <= notifiedCompletionRef.current) return;
+    notifiedCompletionRef.current = state.completionId;
+    const label = state.lastCompletedPhase === "work" ? "作業" : "休憩";
+    toast.success(`${label}時間が終了しました。`, {
+      position: "top-center",
+      autoClose: 5000,
+    });
+    playSound();
+  }, [state.completionId, state.lastCompletedPhase, playSound]);
 
-	// お知らせの表示と音声の再生
-	const showNotification = useCallback(() => {
-		toast.success(`${isBreak ? "休憩" : "作業"}時間が終了しました。`, {
-			position: "top-center",
-			autoClose: 5000,
-			hideProgressBar: false,
-			closeOnClick: true,
-			pauseOnHover: true,
-			draggable: true,
-		});
-		playSound();
-	}, [isBreak, playSound]);
+  useEffect(() => {
+    document.title = `${formatTime(time)}｜${phaseLabel}${isActive ? "" : "（停止中）"}｜ポモドーロタイマー`;
+  }, [time, phaseLabel, isActive]);
 
-	const formatTime = (time: number) => {
-		const minutes = Math.floor(time / 60);
-		const seconds = time % 60;
-		return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-	};
+  useEffect(
+    () => () => {
+      document.title = originalTitle;
+    },
+    [originalTitle],
+  );
 
-	// タイマー動作中か判定
-	const toggleTimer = () => {
-		setIsActive((prev) => !prev);
-	};
+  const resetTimer = useCallback(
+    (phase: Phase) => {
+      dispatch({ type: "reset", phase, settings });
+    },
+    [settings],
+  );
 
-	useEffect(() => {
-		if (time <= 0 && !notificationShown) {
-			showNotification();
-			setNotificationShown(true);
-			handlePhaseEnd();
-		}
-	}, [time, notificationShown, showNotification, handlePhaseEnd]);
+  const toggleTimer = () =>
+    dispatch({ type: "toggle", now: Date.now(), settings });
 
-	useEffect(() => {
-		phaseRef.current = phase;
-	}, [phase]);
-
-	useEffect(() => {
-		const currentPhase = phaseRef.current;
-		const seconds = phaseToSeconds(currentPhase, settings);
-		setTime(seconds);
-		setMaxTime(seconds);
-		setIsActive(false);
-		setNotificationShown(false);
-	}, [settings]);
-
-	// タイマーのアニメーション設定
-	const animate = useCallback(
-		(currentTime: number) => {
-			if (previousTimeRef.current != undefined) {
-				const deltaTime = currentTime - previousTimeRef.current;
-
-				if (isActive && deltaTime >= 1000) {
-					setTime((prevTime) => Math.max(prevTime - 1, 0));
-					previousTimeRef.current = currentTime;
-				}
-			} else {
-				previousTimeRef.current = currentTime;
-			}
-			requestRef.current = requestAnimationFrame(animate);
-		},
-		[isActive],
-	);
-
-	// アニメーションフレーム設定
-	useEffect(() => {
-		requestRef.current = requestAnimationFrame(animate);
-		return () => {
-			if (requestRef.current) {
-				cancelAnimationFrame(requestRef.current);
-			}
-		};
-	}, [animate]);
-
-	return {
-		time,
-		isActive,
-		isBreak,
-		maxTime,
-		formatTime,
-		resetTimer,
-		toggleTimer,
-	};
+  return {
+    time,
+    isActive,
+    isBreak: state.phase !== "work",
+    phaseLabel,
+    completedWorkCount: state.completedWorkCount,
+    workUntilLongBreak:
+      settings.longBreakEvery -
+      (state.completedWorkCount % settings.longBreakEvery),
+    maxTime: state.durationSeconds,
+    formatTime,
+    resetTimer,
+    toggleTimer,
+  };
 };
 
 export default useTimer;

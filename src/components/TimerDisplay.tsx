@@ -7,14 +7,14 @@ interface TimerDisplayProps {
   formatTime: (time: number) => string;
   time: number;
   maxTime: number;
-  isBreak: boolean;
+  phaseLabel: string;
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({
   formatTime,
   time,
   maxTime,
-  isBreak,
+  phaseLabel,
 }) => {
   const [colorPick, setColorPick] = usePersistendState<string>(
     "pomodoro.timerColor",
@@ -105,7 +105,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
             color={textColor}
             textAlign="center"
           >
-            {isBreak ? "休憩中" : "作業中"}
+            {phaseLabel}
           </Text>
         </Box>
       </Circle>
